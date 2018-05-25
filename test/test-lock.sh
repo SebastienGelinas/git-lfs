@@ -229,3 +229,22 @@ begin_test "creating a lock (symlinked working directory)"
   popd > /dev/null
 )
 end_test
+
+begin_test "creating a lock (non-lockable path)"
+(
+  set -eo pipefail
+
+  reponame="lock-non-lockable-path"
+  setup_remote_repo "$reponame"
+  clone_repo "$reponame" "$reponame"
+
+  printf a > non_lockable.dat
+  git add non_lockable.dat
+  git commit -m "initial commit"
+
+  git push origin master
+
+  git lfs lock non_lockable.dat 2>&1 | tee lock.log
+  grep "unable to lock non-lockable path: non_lockable.dat" lock.log
+)
+end_test
